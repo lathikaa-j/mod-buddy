@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 type Report = {
   id: number;
@@ -12,7 +12,7 @@ type Report = {
 const reports: Report[] = [
   {
     id: 1,
-    title: "Crypto giveaway scam link posted",
+    title: "Crypto scam giveaway post",
     category: "Spam",
     priority: 3,
     confidence: 94,
@@ -20,26 +20,26 @@ const reports: Report[] = [
   },
   {
     id: 2,
-    title: "Abusive harassment in comments",
-    category: "Harassment",
+    title: "Harassment in comments",
+    category: "Hate",
     priority: 5,
     confidence: 97,
-    content: "You are worthless and should leave this platform..."
+    content: "Abusive message targeting user..."
   },
   {
     id: 3,
-    title: "Repeated duplicate reports",
-    category: "Low Risk",
+    title: "Duplicate spam reports",
+    category: "Low",
     priority: 1,
     confidence: 72,
-    content: "Same report submitted multiple times."
+    content: "Repeated reports on same post"
   }
 ];
 
 export const Game = () => {
-  const sortedReports = [...reports].sort((a, b) => b.priority - a.priority);
+  const sorted = [...reports].sort((a, b) => b.priority - a.priority);
 
-  const [selected, setSelected] = useState<Report>(sortedReports[0]!);
+  const [selected, setSelected] = useState<Report>(sorted[0]!);
 
   const getColor = (p: number) => {
     if (p >= 5) return "#ff3b30";
@@ -47,8 +47,8 @@ export const Game = () => {
     return "#34c759";
   };
 
-  const handleAction = (action: string) => {
-    alert(`${action} -> ${selected.title}`);
+  const action = (type: string) => {
+    alert(`${type}: ${selected.title}`);
   };
 
   return (
@@ -58,7 +58,7 @@ export const Game = () => {
       <div style={styles.header}>
         <h1 style={styles.title}>QueueSense</h1>
         <p style={styles.subtitle}>
-          AI Moderation Dashboard for Reddit Communities
+          AI Moderation Dashboard (Devvit Hackathon)
         </p>
       </div>
 
@@ -67,9 +67,9 @@ export const Game = () => {
 
         {/* LEFT */}
         <div style={styles.panel}>
-          <h2 style={styles.panelTitle}>Moderation Queue</h2>
+          <h3>Queue</h3>
 
-          {sortedReports.map((r) => (
+          {sorted.map((r) => (
             <div
               key={r.id}
               onClick={() => setSelected(r)}
@@ -78,38 +78,31 @@ export const Game = () => {
                 borderLeft: `5px solid ${getColor(r.priority)}`
               }}
             >
-              <div style={styles.cardTitle}>{r.title}</div>
+              <b>{r.title}</b>
               <div style={styles.meta}>
                 <span>{r.category}</span>
-                <span>Priority: {r.priority}</span>
+                <span>P{r.priority}</span>
               </div>
             </div>
           ))}
         </div>
 
-        {/* MIDDLE */}
+        {/* CENTER */}
         <div style={styles.panel}>
-          <h2 style={styles.panelTitle}>Report Details</h2>
+          <h3>Details</h3>
 
           <div style={styles.box}>
-            <h3>{selected.title}</h3>
-            <p style={{ opacity: 0.85 }}>{selected.content}</p>
+            <h4>{selected.title}</h4>
+            <p>{selected.content}</p>
+            <p>Category: {selected.category}</p>
+            <p>Priority: {selected.priority}/5</p>
 
-            <p><b>Category:</b> {selected.category}</p>
-            <p><b>Priority:</b> {selected.priority}/5</p>
-
-            <div style={styles.actions}>
-              <button
-                style={styles.approve}
-                onClick={() => handleAction("APPROVE")}
-              >
+            <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+              <button style={styles.approve} onClick={() => action("APPROVE")}>
                 Approve
               </button>
 
-              <button
-                style={styles.remove}
-                onClick={() => handleAction("REMOVE")}
-              >
+              <button style={styles.remove} onClick={() => action("REMOVE")}>
                 Remove
               </button>
             </div>
@@ -118,23 +111,19 @@ export const Game = () => {
 
         {/* RIGHT */}
         <div style={styles.panel}>
-          <h2 style={styles.panelTitle}>AI Insights</h2>
+          <h3>AI Insights</h3>
 
           <div style={styles.box}>
-            <p><b>AI Confidence:</b> {selected.confidence}%</p>
+            <p>Confidence: {selected.confidence}%</p>
 
             <p>
-              <b>AI Score:</b>{" "}
-              {Math.round((selected.priority * selected.confidence) / 5)}/100
+              Score:{" "}
+              {Math.round((selected.priority * selected.confidence) / 5)}
             </p>
 
             <p>
-              <b>Recommendation:</b>{" "}
-              {selected.priority >= 4 ? "REMOVE IMMEDIATELY" : "REVIEW"}
-            </p>
-
-            <p style={{ opacity: 0.7, marginTop: "10px" }}>
-              AI analyzes spam signals, toxicity patterns, and user reports.
+              Decision:{" "}
+              {selected.priority >= 4 ? "REMOVE" : "REVIEW"}
             </p>
           </div>
         </div>
@@ -158,9 +147,8 @@ const styles: any = {
   },
 
   title: {
-    fontSize: "30px",
-    fontWeight: "bold",
-    margin: 0
+    fontSize: "28px",
+    fontWeight: "bold"
   },
 
   subtitle: {
@@ -175,26 +163,17 @@ const styles: any = {
 
   panel: {
     background: "#111a2e",
-    borderRadius: "14px",
     padding: "15px",
+    borderRadius: "12px",
     minHeight: "500px"
-  },
-
-  panelTitle: {
-    marginBottom: "12px"
   },
 
   card: {
     background: "#1a2440",
     padding: "10px",
-    borderRadius: "10px",
     marginBottom: "10px",
+    borderRadius: "8px",
     cursor: "pointer"
-  },
-
-  cardTitle: {
-    fontWeight: "bold",
-    marginBottom: "5px"
   },
 
   meta: {
@@ -210,27 +189,21 @@ const styles: any = {
     borderRadius: "10px"
   },
 
-  actions: {
-    marginTop: "15px",
-    display: "flex",
-    gap: "10px"
-  },
-
   approve: {
     background: "#22c55e",
     border: "none",
-    padding: "8px 12px",
-    borderRadius: "8px",
+    padding: "8px",
     color: "white",
+    borderRadius: "6px",
     cursor: "pointer"
   },
 
   remove: {
     background: "#ef4444",
     border: "none",
-    padding: "8px 12px",
-    borderRadius: "8px",
+    padding: "8px",
     color: "white",
+    borderRadius: "6px",
     cursor: "pointer"
   }
 };
