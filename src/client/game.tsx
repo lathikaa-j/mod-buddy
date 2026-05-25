@@ -1,110 +1,209 @@
-import './index.css';
+import { useState } from "react";
 
-import { StrictMode, useEffect, useState } from 'react';
-import { createRoot } from 'react-dom/client';
-import { navigateTo } from '@devvit/web/client';
-import { trpc } from './trpc';
-import type { inferRouterOutputs } from '@trpc/server';
-import type { AppRouter } from '../server/trpc';
+type Report = {
+  id: number;
+  title: string;
+  category: string;
+  priority: number;
+  confidence: number;
+  content: string;
+};
 
-type RouterOutputs = inferRouterOutputs<AppRouter>;
+const reports: Report[] = [
+  {
+    id: 1,
+    title: "Crypto scam giveaway post",
+    category: "Spam",
+    priority: 3,
+    confidence: 94,
+    content: "Click here to get free bitcoin instantly..."
+  },
+  {
+    id: 2,
+    title: "Harassment in comments",
+    category: "Hate",
+    priority: 5,
+    confidence: 97,
+    content: "Abusive message targeting user..."
+  },
+  {
+    id: 3,
+    title: "Duplicate spam reports",
+    category: "Low",
+    priority: 1,
+    confidence: 72,
+    content: "Repeated reports on same post"
+  }
+];
 
-export const App = () => {
-  const [init, setInit] = useState<RouterOutputs['init']['get'] | null>(null);
+export const Game = () => {
+  const sorted = [...reports].sort((a, b) => b.priority - a.priority);
 
-  const fetchInit = async () => {
-    const data = await trpc.init.get.query();
-    setInit(data);
+  const [selected, setSelected] = useState<Report>(sorted[0]!);
+
+  const getColor = (p: number) => {
+    if (p >= 5) return "#ff3b30";
+    if (p >= 3) return "#ff9500";
+    return "#34c759";
   };
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void fetchInit();
-  }, []);
-
-  const [loading, setLoading] = useState(false);
-  const { username, count } = init ?? { count: 0 };
-
-  const increment = async () => {
-    setLoading(true);
-    const result = await trpc.counter.increment.mutate();
-    setInit((prev) => (prev ? { ...prev, count: result.count } : null));
-    setLoading(false);
-  };
-
-  const decrement = async () => {
-    setLoading(true);
-    const result = await trpc.counter.decrement.mutate();
-    setInit((prev) => (prev ? { ...prev, count: result.count } : null));
-    setLoading(false);
+  const action = (type: string) => {
+    alert(`${type}: ${selected.title}`);
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center gap-4 bg-white dark:bg-gray-900">
-      <img
-        className="mx-auto w-1/2 max-w-[250px] object-contain"
-        src="/snoo.png"
-        alt="Snoo"
-      />
-      <div className="flex flex-col items-center gap-2">
-        <h1 className="text-center text-2xl font-bold text-gray-900 dark:text-gray-100">
-          {username ? `Hey ${username} 👋` : ''}
-        </h1>
-        <p className="text-center text-base text-gray-600 dark:text-gray-300">
-          Edit{' '}
-          <span className="rounded bg-[#e5ebee] px-1 py-0.5 dark:bg-gray-700">
-            src/client/game.tsx
-          </span>{' '}
-          to get started.
+    <div style={styles.container}>
+
+      {/* HEADER */}
+      <div style={styles.header}>
+        <h1 style={styles.title}>QueueSense</h1>
+        <p style={styles.subtitle}>
+          AI Moderation Dashboard (Devvit Hackathon)
         </p>
       </div>
-      <div className="mt-5 flex items-center justify-center">
-        <button
-          className="flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-[#d93900] font-mono text-[2.5em] leading-none text-white transition-colors hover:bg-[#c23300] dark:bg-orange-600 dark:hover:bg-orange-700"
-          onClick={decrement}
-          disabled={loading}
-        >
-          -
-        </button>
-        <span className="mx-5 min-w-[50px] text-center text-[1.8em] leading-none font-medium text-gray-900 dark:text-white">
-          {loading ? '...' : count}
-        </span>
-        <button
-          className="flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-[#d93900] font-mono text-[2.5em] leading-none text-white transition-colors hover:bg-[#c23300] dark:bg-orange-600 dark:hover:bg-orange-700"
-          onClick={increment}
-          disabled={loading}
-        >
-          +
-        </button>
+
+      {/* GRID */}
+      <div style={styles.grid}>
+
+        {/* LEFT */}
+        <div style={styles.panel}>
+          <h3>Queue</h3>
+
+          {sorted.map((r) => (
+            <div
+              key={r.id}
+              onClick={() => setSelected(r)}
+              style={{
+                ...styles.card,
+                borderLeft: `5px solid ${getColor(r.priority)}`
+              }}
+            >
+              <b>{r.title}</b>
+              <div style={styles.meta}>
+                <span>{r.category}</span>
+                <span>P{r.priority}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* CENTER */}
+        <div style={styles.panel}>
+          <h3>Details</h3>
+
+          <div style={styles.box}>
+            <h4>{selected.title}</h4>
+            <p>{selected.content}</p>
+            <p>Category: {selected.category}</p>
+            <p>Priority: {selected.priority}/5</p>
+
+            <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+              <button style={styles.approve} onClick={() => action("APPROVE")}>
+                Approve
+              </button>
+
+              <button style={styles.remove} onClick={() => action("REMOVE")}>
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT */}
+        <div style={styles.panel}>
+          <h3>AI Insights</h3>
+
+          <div style={styles.box}>
+            <p>Confidence: {selected.confidence}%</p>
+
+            <p>
+              Score:{" "}
+              {Math.round((selected.priority * selected.confidence) / 5)}
+            </p>
+
+            <p>
+              Decision:{" "}
+              {selected.priority >= 4 ? "REMOVE" : "REVIEW"}
+            </p>
+          </div>
+        </div>
+
       </div>
-      <footer className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-3 text-[0.8em] text-gray-600 dark:text-gray-400">
-        <button
-          className="cursor-pointer hover:text-gray-900 dark:hover:text-white transition-colors"
-          onClick={() => navigateTo('https://developers.reddit.com/docs')}
-        >
-          Docs
-        </button>
-        <span className="text-gray-300 dark:text-gray-600">|</span>
-        <button
-          className="cursor-pointer hover:text-gray-900 dark:hover:text-white transition-colors"
-          onClick={() => navigateTo('https://www.reddit.com/r/Devvit')}
-        >
-          r/Devvit
-        </button>
-        <span className="text-gray-300 dark:text-gray-600">|</span>
-        <button
-          className="cursor-pointer hover:text-gray-900 dark:hover:text-white transition-colors"
-          onClick={() => navigateTo('https://discord.com/invite/R7yu2wh9Qz')}
-        >
-          Discord
-        </button>
-      </footer>
     </div>
   );
 };
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>
-);
+const styles: any = {
+  container: {
+    fontFamily: "Arial",
+    background: "#0b1220",
+    minHeight: "100vh",
+    color: "white",
+    padding: "20px"
+  },
+
+  header: {
+    marginBottom: "20px"
+  },
+
+  title: {
+    fontSize: "28px",
+    fontWeight: "bold"
+  },
+
+  subtitle: {
+    opacity: 0.7
+  },
+
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr 1fr",
+    gap: "15px"
+  },
+
+  panel: {
+    background: "#111a2e",
+    padding: "15px",
+    borderRadius: "12px",
+    minHeight: "500px"
+  },
+
+  card: {
+    background: "#1a2440",
+    padding: "10px",
+    marginBottom: "10px",
+    borderRadius: "8px",
+    cursor: "pointer"
+  },
+
+  meta: {
+    display: "flex",
+    justifyContent: "space-between",
+    fontSize: "12px",
+    opacity: 0.8
+  },
+
+  box: {
+    background: "#1a2440",
+    padding: "12px",
+    borderRadius: "10px"
+  },
+
+  approve: {
+    background: "#22c55e",
+    border: "none",
+    padding: "8px",
+    color: "white",
+    borderRadius: "6px",
+    cursor: "pointer"
+  },
+
+  remove: {
+    background: "#ef4444",
+    border: "none",
+    padding: "8px",
+    color: "white",
+    borderRadius: "6px",
+    cursor: "pointer"
+  }
+};
