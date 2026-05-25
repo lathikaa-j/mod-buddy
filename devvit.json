@@ -1,6 +1,6 @@
 {
   "$schema": "https://developers.reddit.com/schema/config-file.v1.json",
-  "name": "mod-buddy",
+  "name": "modbuddy-1",
   "post": {
     "dir": "dist/client",
     "entrypoints": {
@@ -49,6 +49,6 @@
     "build": "vite build"
   },
   "dev": {
-    "subreddit": "mod_buddy_dev"
+    "subreddit": "modbuddy_1_dev"
   }
 }
