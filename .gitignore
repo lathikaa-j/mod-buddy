@@ -9,3 +9,5 @@ yarn-error.log*
 webroot
 dist
 coverage
+.env
+node_modules/
